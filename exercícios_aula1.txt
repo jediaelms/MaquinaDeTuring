@@ -1,0 +1,34 @@
+Exercício 1.5
+R: c), d), e), f), h), i)
+
+Exercício 1.6
+R:
+	a)  Prefixos: ε, t, te, teo, teor, teori, teoria
+		Sufixos: ε, a, ia, ria, oria, eoria, teoria
+
+	b)  Prefixos: ε, u, un, uni, univ, unive, univer, univers, universi, universid, universida, universidad, universidade 
+		Sufixos: ε, e, de, ade, dade, idade, sidade, rsidade, ersidade, versidade, iversidade, niversidade, universidade
+	
+	c)  Prefixos: ε, a, aa, aaa 
+		Sufixos: ε, a, aa, aaa
+
+	d)  Prefixos: ε, a, ab, abc, abcc, abccb, abccba
+		Sufixos: ε, a, ba, cba, ccba, bccba, abccba
+
+	e)  Prefixos: ε, a, ab, abc, abca, abca, abcab, abcabc
+		Sufixos: ε, c, bc, abc, cabc, bcabc, abcabc
+
+Exercício 1.7
+R:
+	a) ab* = a, ab, abb, abbbb... (Comprovada)
+
+	b) ab != ba (Negada)
+
+	c) εa = a = aε (Comprovada)
+
+	d) (ab)b = a(bb) (Comprovadad)
+
+	e) ab != ba (Negada)
+
+Exercício 1.8
+R: Quando na adição os fatores são um número natural e o zero, já na concatenação, um número e o símbolo vazio
