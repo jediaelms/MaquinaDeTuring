@@ -300,7 +300,7 @@
           item.text = texto;
         });
         console.log(links);
-        if (simulador(links, -1, 0, inicial, "L")) {
+        if (simulador2(links, -1, 0, inicial, "D")) {
           document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
         }
         else {
@@ -323,7 +323,7 @@
           str = $(this).val();
           console.log(str + ", index: " + index);
 
-          if (simulador(links, -1, 0, inicial, "L")) {
+          if (simulador2(links, -1, 0, inicial, "D")) {
             console.log("String " + str + " aceita.");
             $(this).parent().parent('tr').css("background-color", "#d0e9c6");
             $(this).parent().parent().children(".aceita").empty();
@@ -436,6 +436,53 @@
       caminho.push(0);
       return false;
     }
+
+
+
+    function simulador2(links, cont, from, to, ant) {
+      var i = 0;
+      caminho = [];
+      contPasso = 0;
+      let valorAnterior = 0;
+
+      if (ant == "D") cont++;
+      else if (ant == "E") cont--;
+      
+      if(buscaFinal(finais, to)){ // Se chegou em um final, Sucesso!
+      	caminho.push(to);
+      	return true;
+      }
+
+
+      for (i = 0; i < links.length; i++) {
+        //console.log("\nlinks[i].from = " + links[i].from + ", to = " + to + ", links[i].text = " + links[i].text + ", str[cont] = " + str[cont]);
+        //console.log("\nAceitos: ");
+        if (links[i].from == to && ((links[i].text[0] == str[cont]) || (links[i].text[0] == "@"))) {
+          //console.log("\nLink " + i + ": ");
+          //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
+          if(cont >= 0 || cont < str.length){
+          	valorAnterior = str[cont];
+          	str[cont] = links[i].text[1];
+          }
+          if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])) {
+            //console.log("\nAchou filho com caractere correspondente");
+            caminho.push(to);
+            return true;
+          }
+          else{
+          	cont --;
+          	if(cont >= 0 || cont < str.length){
+          		str[cont] = valorAnterior;
+          	}    	
+          }
+        }
+      }
+      caminho.push(0);
+      return false;
+
+    }
+
+
 
     function passoapasso() {
       console.log("Função passoapasso ->\nCaminho.length = " + caminho.length);
