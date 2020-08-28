@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>LFA - Expressões Regulares</title>
+	<link rel="stylesheet" type="text/css" href="css2/css_exp_reg.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+</head>
+<body onload="CapturaParametrosUrl()">
+
+	<div class="header">
+  		<a href="index.html" class="logo" target="blank">LFA Project</a>
+  		<div class="header-right">
+			<a class="a1" onclick="ERtoAFND()">Converter para AF</a>
+    		<a class="a1" href="">Expressões Regulares</a>
+    		<a class="a1" href="reg_gramm/index.html" target="blank">Gramática</a>
+    		<a class="a1" href="fin_autom/index.html">Autômatos Finitos</a>
+  		</div>
+	</div>
+	<br><h2 class="text-center"> Expressões Regulares </h2>
+
+	<div class="container">
+  		<form action="action_page.php">
+
+    		<label for="exp_reg">Expressões Regulares</label>
+    		<input type="text" id="exp_reg" name="expressao_regular" placeholder="Expressões Regulares...">
+
+
+    		<label for="texto">Texto</label>
+    		<input type="text" id="texto" name="texto" placeholder="Texto..." style="height:100px" onkeyup="reg()" onclick="reg()">
+
+        <label for="texto">Texto 2</label>
+        <input type="text" id="texto2" name="texto" placeholder="Texto..." style="height:100px" onkeyup="reg2()" onclick="reg2()">
+		
+ 		 </form>
+	</div>
+
+	<script src="js2/script_exp_reg.js"></script>
+</body>
+</html>
