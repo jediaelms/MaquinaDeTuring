@@ -1,0 +1,19 @@
+- Construir tabela de transição
+	-> Fazer varredura para criar recuperar alfabeto - ok
+	-> Para cada nó, inserir nós filhos - ok
+	-> Identificar o nó inicial e os nós finais - ok
+	-> Indexar os vetores da matTransicao como a nos[i].key*-1 - ok
+
+Transformação AFND para AFD
+- Começar com o nó inicial (colocá-lo na pilha)
+- Para cada símbolo do alfabeto, verificar em quais nós se tem transição
+- Terminando esse símbolo, verificar se o nó resultante (junção dos nós filhos) já foram "descobertos". Caso negativo, adicionar ele na pilha de novos nós.
+- Vericar se nesse novo nó existe um nó final, caso positivo, ele também será final.
+
+- Finaliza quando a pilha estiver vazia. 
+
+
+
+
+//ERRO
+- Quando já é AFD, não faz a conversão

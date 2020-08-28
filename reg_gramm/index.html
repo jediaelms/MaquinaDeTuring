@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>LFA - Gramática Regular</title>
+	<link rel="stylesheet" type="text/css" href="css/css_gramm.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+</head>
+<body onload="CapturaParametrosUrl();">
+
+
+	<div class="header">
+  		<a href="../index.html" class="logo" target="blank">LFA Project</a>
+  		<div class="header-right">
+			<a class="a1" onclick="converteGramatica()">Converter para AF</a>
+    		<a class="a1" href="../exp_reg.html" target="blank">Expressões Regulares</a>
+    		<a class="a1" href="">Gramática</a>
+    		<a class="a1" href="../fin_autom/index.html">Autômatos Finitos</a>
+  		</div>
+	</div>
+	<br><h2 class="text-center"> Gramática </h2>
+	
+	<form method="POST" style="float: left; width: 25%; margin-top: 50px; margin-left: 200px;">
+		<h1>Gramática</h1>
+     	<div id="dynamicInput">
+          <input type="text" name="myInputs[]" style="margin-top: 5px; height:35px; width:300px; font-size: 20px">
+     	</div>
+     	<input type="button" value="Novo Campo" style="margin-top: 10px;" onClick="addInput('dynamicInput');">
+	</form>
+
+
+	<div style="float:  right; width: 25%; margin-top: 50px; margin-right: 200px; ">
+		<h1>Sentença de Teste</h1>
+		<input type="text" id="str" style="margin-top: 5px; height:35px; width:300px; font-size: 20px;">
+		<input type="button" value="Simular" onClick="getString()">
+	</div>
+	
+
+	<script src="script_reg_gramm.js" language="Javascript" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,1239 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>LFA - Autômato Finito</title>
+  <meta name="description" content="A finite state machine chart with editable and interactive features." />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Copyright 1998-2019 by Northwoods Software Corporation. -->
+
+  <style>
+    .highlight {
+      background-color: yellow;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="../reg_gramm/css/css_gramm.css">
+  <script src="release/go.js"></script>
+  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/8f611551e6.js" crossorigin="anonymous"></script>
+  <script id="code">
+    var cont = 0;
+    var inicial = 0;
+    var finais = [];
+    var caminho = [];
+    var contPasso = 0;
+    var str = "";
+
+    function setInitial(e, obj) {
+      myDiagram.commit(function (d) {
+        d.selection.each(function (node) {
+          var shape = node.findObject("SHAPE");
+          // If there was a GraphObject in the node named SHAPE, then set its fill to red:
+          if (shape !== null) {
+            if (inicial == 0) {
+              shape.fill = "lightgreen";
+              inicial = obj.part.data.key;
+            } else {
+              if (shape.fill == "lightgreen") {
+                shape.fill = "lightblue";
+                inicial = 0;
+              } else {
+                resetInitial(inicial);
+                shape.fill = "lightgreen";
+                inicial = obj.part.data.key;
+              }
+            }
+          }
+
+        });
+      }, "change color");
+      console.log("Inicial: " + inicial);
+    }
+    function resetInitial(key) {
+      //node = myDiagram.findNodeForKey(key);
+      myDiagram.commit(function (d) {  // this Diagram
+        // iterate over all nodes in Diagram
+        d.nodes.each(function (node) {
+          if (node.data.key === key) {
+            var shape = node.findObject("SHAPE");
+            if (shape !== null) {
+              shape.fill = "lightblue";
+            }
+          }
+        });
+
+      }, "change color");
+    }
+
+    function buscaElemFinal(vet, key) {
+      for (i = 0; i < vet.length; i++) {
+        if (vet[i] == key) {
+          vet.splice(i, 1);
+          return;
+        }
+      }
+    }
+
+    function setFinal(e, obj) {
+      myDiagram.commit(function (d) {
+        d.selection.each(function (node) {
+          var shape = node.findObject("SHAPE");
+          // If there was a GraphObject in the node named SHAPE, then set its fill to red:
+          if (shape !== null) {
+            if (shape.stroke == "blue") {
+              shape.stroke = "";
+              shape.strokeWidth = 0;
+              console.log("Retira final:" + finais);
+              buscaElemFinal(finais, obj.part.data.key);
+              console.log("Depois da remoção: " + finais);
+            } else {
+              shape.stroke = "blue";
+              shape.strokeWidth = 3;
+              finais.push(obj.part.data.key);
+              console.log("Define final :" + finais);
+            }
+          }
+        });
+      }, "change color");
+    }
+
+
+    var nameId = 0;
+
+    function idInc() {
+      nameId++;
+      var str = nameId.toString(10);
+      str = "Q" + str;
+      return (str);
+    }
+
+    function init() {
+      document.getElementById("prox").disabled = true;
+      document.getElementById("ant").disabled = true;
+      //if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
+      var $ = go.GraphObject.make;  // for conciseness in defining templates
+      var cont2 = 0;
+      myDiagram =
+        $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+          {
+            // have mouse wheel events zoom in and out instead of scroll up and down
+            "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom
+            // enable undo & redo
+            //"undoManager.isEnabled": true
+          });
+
+      // when the document is modified, add a "*" to the title and enable the "Save" button
+      /*myDiagram.addDiagramListener("Modified", function (e) {
+        var button = document.getElementById("SaveButton");
+        if (button) button.disabled = !myDiagram.isModified;
+        var idx = document.title.indexOf("*");
+        if (myDiagram.isModified) {
+          if (idx < 0) document.title += "*";
+        } else {
+          if (idx >= 0) document.title = document.title.substr(0, idx);
+        }
+      });*/
+
+      // define the Node template
+      myDiagram.nodeTemplate =
+        $(go.Node, "Auto",
+          new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+          // define the node's outer shape, which will surround the TextBlock
+          $(go.Shape, "Circle",
+            {
+              parameter1: 20,  // the corner has a large radius
+              fill: "lightblue",
+              width: 50,
+              height: 50,
+              stroke: null,
+              name: "SHAPE",
+              portId: "",  // this Shape is the Node's port, not the whole Node
+              fromLinkable: true, fromLinkableSelfNode: true, fromLinkableDuplicates: true,
+              toLinkable: true, toLinkableSelfNode: true, toLinkableDuplicates: true,
+              cursor: "pointer"
+            }, new go.Binding("Inicial", "Teste").makeTwoWay()),
+          $(go.TextBlock,
+            {
+              font: "bold 11pt helvetica, bold arial, sans-serif",
+              editable: true  // editing the text automatically updates the model data
+            },
+            new go.Binding("text").makeTwoWay()),
+          {
+            contextMenu:     // define a context menu for each node
+              $("ContextMenu",  // that has one button
+                $("ContextMenuButton",
+                  $(go.TextBlock, "Inicial"),
+                  { click: setInitial }),
+                $("ContextMenuButton",
+                  $(go.TextBlock, "Final"),
+                  { click: setFinal })
+                // more ContextMenuButtons would go here
+              )  // end Adornment
+          }
+        );
+
+      // unlike the normal selection Adornment, this one includes a Button
+      myDiagram.nodeTemplate.selectionAdornmentTemplate =
+        $(go.Adornment, "Spot",
+          $(go.Panel, "Auto",
+            $(go.Shape, "Circle",
+              { fill: null, stroke: "green", strokeWidth: 4 }),
+            $(go.Placeholder)  // a Placeholder sizes itself to the selected Node
+          ),
+          // the button to create a "next" node, at the top-right corner
+          $("Button",
+            {
+              alignment: go.Spot.TopRight,
+              click: addNodeAndLink  // this function is defined below
+            },
+            $(go.Shape, "PlusLine", { width: 6, height: 6 })
+          ) // end button
+        ); // end Adornment
+
+      // clicking the button inserts a new node to the right of the selected node,
+      // and adds a link to that new node
+      function addNodeAndLink(e, obj) {
+        var adornment = obj.part;
+        var diagram = e.diagram;
+        diagram.startTransaction("Add State");
+
+        // get the node data for which the user clicked the button
+        var fromNode = adornment.adornedPart;
+        var fromData = fromNode.data;
+        // create a new "State" data object, positioned off to the right of the adorned Node
+        var toData = { text: idInc() };
+        var p = fromNode.location.copy();
+        p.x += 200;
+        toData.loc = go.Point.stringify(p);  // the "loc" property is a string, not a Point object
+        // add the new node data to the model
+        var model = diagram.model;
+        model.addNodeData(toData);
+
+        // create a link data from the old node data to the new node data
+        var linkdata = {
+          from: model.getKeyForNodeData(fromData),  // or just: fromData.id
+          to: model.getKeyForNodeData(toData),
+          text: "@"
+        };
+        // and add the link data to the model
+        model.addLinkData(linkdata);
+
+        // select the new Node
+        var newnode = diagram.findNodeForData(toData);
+        diagram.select(newnode);
+
+        diagram.commitTransaction("Add State");
+
+        // if the new node is off-screen, scroll the diagram to show the new node
+        diagram.scrollToRect(newnode.actualBounds);
+      }
+
+      function okNameLink(textblock, oldstr, newstr) {
+        return newstr.length <= 1;
+      }
+      // replace the default Link template in the linkTemplateMap
+      myDiagram.linkTemplate =
+        $(go.Link,  // the whole link panel
+          {
+            curve: go.Link.Bezier, adjusting: go.Link.Stretch,
+            reshapable: true, relinkableFrom: true, relinkableTo: true,
+            toShortLength: 3
+          },
+          new go.Binding("points").makeTwoWay(),
+          new go.Binding("curviness"),
+          $(go.Shape,  // the link shape
+            { strokeWidth: 1.5 }),
+          $(go.Shape,  // the arrowhead
+            { toArrow: "standard", stroke: null }),
+          $(go.Panel, "Auto",
+            $(go.Shape,  // the label background, which becomes transparent around the edges
+              {
+                fill: $(go.Brush, "Radial",
+                  { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                stroke: null
+              }),
+            $(go.TextBlock, "@",  // the label text
+              {
+                textAlign: "center",
+                font: "9pt helvetica, arial, sans-serif",
+                margin: 4,
+                editable: true,  // enable in-place editing
+                textValidation: okNameLink
+              },
+              // editing the text automatically updates the model data
+              new go.Binding("text").makeTwoWay())
+          )
+        );
+
+      // read in the JSON data from the "mySavedModel" element
+      load();
+    }
+
+    // Show the diagram's model in JSON format
+    function simular() {
+      if (inicial != 0 && finais.length > 0) {
+        str = document.getElementById("string").value;
+        document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+        var objs = JSON.parse(myDiagram.model.toJson());
+        var links = objs.linkDataArray;
+        console.log(objs);
+        console.log(links);
+
+        if (simulador(links, -1, 0, inicial, "L")) {
+          document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
+        }
+        else {
+          document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
+        }
+      }
+      else {
+        alert("Não é possível simular o autômato finito. Pois não há um nó inicial ou pelo menos um nó final.")
+      }
+    }
+
+    function simularMultiplos() {
+      if (inicial != 0 && finais.length > 0) {
+        console.log("Simular Múltiplos");
+        document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+        var objs = JSON.parse(myDiagram.model.toJson());
+        var links = objs.linkDataArray;
+        $(".resposta").remove();
+        $('input[name=strings]').each(function (index, text) {
+          str = $(this).val();
+          console.log(str + ", index: " + index);
+
+          if (simulador(links, -1, 0, inicial, "L")) {
+            console.log("String " + str + " aceita.");
+            $(this).parent().parent('tr').css("background-color", "#d0e9c6");
+            $(this).parent().parent().children(".aceita").empty();
+            $(this).parent().parent().children(".aceita").append("<i class='fas fa-check text-success'></i>");
+          } else {
+            console.log("String " + str + " rejeitada.");
+            $(this).parent().parent('tr').css("background-color", "#f2dede");
+            $(this).parent().parent().children(".aceita").empty();
+            $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
+          }
+        }
+        );
+      }
+      else {
+        alert("Não é possível simular o autômato finito. Pois não há um nó inicial ou pelo menos um nó final.")
+      }
+    }
+
+    function load() {
+      myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
+    }
+
+    function buscaTo(obj, key) {
+      for (i = 0; i < obj.length; i++) {
+        if (obj[i].to == key) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    function buscaFrom(obj, key) {
+      for (i = 0; i < obj.length; i++) {
+        if (obj[i].from == key) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+
+    function buscaFinal(obj, key) {
+      for (i = 0; i < obj.length; i++) {
+        if (obj[i] == key) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function destacaNo(key) {
+      myDiagram.commit(function (d) {  // this Diagram
+        // iterate over all nodes in Diagram
+        d.nodes.each(function (node) {
+          if (node.data.key === key) {
+            myDiagram.select(myDiagram.findNodeForKey(key));
+          }
+        });
+
+      }, "destaca nó");
+    }
+
+    function simulador(links, cont, from, to, ant) {
+      var i = 0;
+      caminho = [];
+      contPasso = 0;
+      if (ant != "@") cont++;
+
+      //Condição Parada
+      //console.log("\nCont: " + cont + ", str.length = " + str.length);
+      if (cont == (str.length)) { //Chegou ao último caractere da string
+        if (buscaFinal(finais, to)) {
+          //console.log("\nTerminou a string e é final");
+          caminho.push(to);
+          return true;
+        } //Terminou a string e é final (SUCESSO)
+        else {                 //Terminou a string mas não é final (Continua verificando - Volta um (pelo menos) nó)  
+          //console.log("\nTerminou a string mas não é final");
+          caminho.push(0); //Verificar os casos em que seguem-se vários símbolos vazios e depois algum que não é.
+          for (i = 0; i < links.length; i++) { //Verifica se tem símbolos vazios depois da última letra da string, para assim chegar em um final
+            if (links[i].from == to && (links[i].text == "@")) {
+              if (simulador(links, cont, links[i].from, links[i].to, links[i].text)) {
+                caminho.push(to);
+                return true;
+              }
+            }
+          }
+          caminho.push(0);
+          return false;
+        }
+      }
+      //Condição Parada
+
+      //Chamada Recursiva
+      for (i = 0; i < links.length; i++) {
+        //console.log("\nlinks[i].from = " + links[i].from + ", to = " + to + ", links[i].text = " + links[i].text + ", str[cont] = " + str[cont]);
+        //console.log("\nAceitos: ");
+        if (links[i].from == to && ((links[i].text == str[cont]) || (links[i].text == "@"))) {
+          //console.log("\nLink " + i + ": ");
+          //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
+          if (simulador(links, cont, links[i].from, links[i].to, links[i].text)) {
+            //console.log("\nAchou filho com caractere correspondente");
+            caminho.push(to);
+            return true;
+          }
+        }
+      }
+      //Chamada Recursiva
+      //console.log("\nFinaliza transições, mas não achou o caractere");
+      caminho.push(0);
+      return false;
+    }
+
+    function passoapasso() {
+      console.log("Função passoapasso ->\nCaminho.length = " + caminho.length);
+      console.log("Passo: " + contPasso + ", caminho[" + (caminho.length - contPasso - 1) + "] = " + caminho[caminho.length - contPasso - 1]);
+
+      if (caminho[caminho.length - contPasso - 1] == 0) {
+        document.getElementById("string").element.style.backgroundColor = "#e18383";
+      }
+      else {
+        if (contPasso < caminho.length) {
+          if (caminho[caminho.length - contPasso - 1] == 0) {
+            document.getElementById("string").element.style.backgroundColor = "#e18383";
+          } else {
+            destacaNo(caminho[caminho.length - contPasso - 1]);
+            highlight(contPasso);
+          }
+          contPasso++;
+        }
+        else {
+          document.getElementById('prox').disabled = true;
+        }
+      }
+    }
+
+    function bloqueiaBotao() {
+      console.log("Bloqueia botão -> contPasso = " + contPasso);
+      if (contPasso >= 0) {
+        if (contPasso < caminho.length) {
+          document.getElementById("prox").disabled = false;
+        }
+        else {
+          document.getElementById("prox").disabled = true;
+        }
+
+        if (contPasso > 1) {
+          document.getElementById("ant").disabled = false;
+        }
+        else {
+          document.getElementById("ant").disabled = true;
+        }
+      }
+    }
+
+    function highlight(indice) {
+      if (indice >= 0) {
+        conteudo = str.substring(0, indice) + "<span class='highlight'>" + str.substring(indice, indice + 1) + "</span>" + str.substring(indice + 1);
+        document.getElementById("string").innerText = conteudo;
+      }
+    }
+
+    function pesquisa(vetor, chave) {
+      var i;
+      for (i = 0; i < vetor.length; i++) {
+        if (vetor[i] == chave) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function pesquisaVetor(matriz, vetor) {
+      var i, j, cont;
+      for (i = 0; i < matriz.length; i++) {
+        cont = 0;
+        if (matriz[i].length == vetor.length) {
+          for (j = 0; j < vetor.length; j++) {
+            if (pesquisa(matriz[i], vetor[j])) {
+              cont++;
+            }
+          }
+          if (cont == vetor.length) {
+            return i;
+          }
+        }
+      }
+      return -1;
+    }
+
+    function pesquisaIndice(vetor, chave) {
+      var i;
+      for (i = 0; i < vetor.length; i++) {
+        if (vetor[i].text == chave) return vetor[i].key;
+      }
+      return 0;
+    }
+
+    function setInitial2(key) {
+      myDiagram.commit(function (d) {  // this Diagram
+        // iterate over all nodes in Diagram
+        d.nodes.each(function (node) {
+          if (node.data.key === key) {
+            var shape = node.findObject("SHAPE");
+            // If there was a GraphObject in the node named SHAPE, then set its fill to red:
+            if (shape !== null) {
+              if (inicial == 0) {
+                shape.fill = "lightgreen";
+                inicial = key;
+              } else {
+                if (shape.fill == "lightgreen") {
+                  shape.fill = "lightblue";
+                  inicial = 0;
+                } else {
+                  resetInitial(inicial);
+                  shape.fill = "lightgreen";
+                  inicial = key;
+                }
+              }
+            }
+          }
+        });
+      }, "destaca nó");
+    }
+
+    function setFinal2(key) {
+      myDiagram.commit(function (d) {  // this Diagram
+        // iterate over all nodes in Diagram
+        d.nodes.each(function (node) {
+          if (node.data.key === key) {
+            var shape = node.findObject("SHAPE");
+            // If there was a GraphObject in the node named SHAPE, then set its fill to red:
+            if (shape !== null) {
+              if (shape.stroke == "blue") {
+                shape.stroke = "";
+                shape.strokeWidth = 0;
+                console.log("Retira final:" + finais);
+                buscaElemFinal(finais, key);
+                console.log("Depois da remoção: " + finais);
+              } else {
+                shape.stroke = "blue";
+                shape.strokeWidth = 3;
+                finais.push(key);
+                console.log("Define final :" + finais);
+              }
+            }
+          }
+        }, "change color");
+      });
+    }
+
+    function AFNDtoAFD() {
+      if (inicial != 0 && finais.length > 0) {
+        document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+        var objs = JSON.parse(myDiagram.model.toJson());
+        var links = objs.linkDataArray;
+        var nos = objs.nodeDataArray;
+        console.log(objs);
+        console.log(links);
+        var i, j, k;
+        var estado_atual = inicial; //tera que ser um vetor
+        var filaEstados = [];
+
+        //Alfabeto
+        var alfabeto = [];
+        for (i = 0; i < links.length; i++) {
+          var simbolo = links[i].text;
+          if (!pesquisa(alfabeto, simbolo)) alfabeto.push(simbolo);
+        }
+        console.log(alfabeto);
+        matTransicao = [];
+        for (i = 0; i < nos.length; i++) {
+          matTransicao[nos[i].key * -1] = [];
+          if (nos[i].key == inicial) {
+            matTransicao[nos[i].key * -1][0] = 1;
+          }
+          else {
+            matTransicao[nos[i].key * -1][0] = 0;
+          }
+          if (pesquisa(finais, nos[i].key)) {
+            matTransicao[nos[i].key * -1][1] = 1;
+          }
+          else {
+            matTransicao[nos[i].key * -1][1] = 0;
+          }
+          for (j = 0; j < alfabeto.length; j++) {
+            matTransicao[nos[i].key * -1][j + 2] = [];
+            for (k = 0; k < links.length; k++) {
+              if (links[k].from == nos[i].key && links[k].text == alfabeto[j]) {
+                matTransicao[nos[i].key * -1][j + 2].push(links[k].to);
+              }
+            }
+          }
+        }
+        console.table(matTransicao);
+        for (i = 0; i < nos.length; i++) {
+          console.log("[" + nos[i].key + "]");
+          for (j = 2; j < alfabeto.length + 2; j++) {
+            if (matTransicao[nos[i].key * -1][j].length > 0) {
+              console.log(alfabeto[j - 2] + " -> {");
+              for (k = 0; k < matTransicao[nos[i].key * -1][j].length; k++) {
+                console.log(" # " + matTransicao[nos[i].key * -1][j][k]);
+              }
+              console.log("}");
+            }
+          }
+        }
+
+        //Construção da matriz de transição AFD com base na matriz de transição AFND
+        var matTransicaoAFD = [], matEstado = [], cont = 0, contAtual, indiceNo, estadosVisitados = [], aux = [], aux2;
+        //filaEstados.push(inicial);
+
+        matEstado[cont] = [];
+        matEstado[cont].push(inicial * -1);
+        filaEstados.push(cont);
+
+        while (filaEstados.length > 0) {
+          indiceNo = filaEstados.shift();
+          matTransicaoAFD[indiceNo] = [0, 0];
+          if (indiceNo == 0) {
+            matTransicaoAFD[indiceNo][0] = 1;
+          }
+          console.log("indiceNo = " + indiceNo);
+          for (i = 0; i < alfabeto.length; i++) { //para cada símbolo do alfabeto
+            for (j = 0; j < matEstado[indiceNo].length; j++) { //percorre cada estado do vetor
+              for (k = 0; k < matTransicao[matEstado[indiceNo][j]][i + 2].length; k++) { //percorre as transicoes do no atual na tabela AFND
+                if (!pesquisa(aux, matTransicao[matEstado[indiceNo][j]][i + 2][k])) {
+                  aux.push(matTransicao[matEstado[indiceNo][j]][i + 2][k] * -1);
+                }
+              }
+              if (matTransicao[matEstado[indiceNo][j]][1] == 1) {
+                matTransicaoAFD[indiceNo][1] = 1;
+              }
+            }
+            //verificar se o conteudo de aux já existe em matEstado
+            aux2 = pesquisaVetor(matEstado, aux);
+            if (aux2 < 0) {
+              cont++;
+              matEstado[cont] = aux;
+              filaEstados.push(cont);
+              aux2 = cont;
+            }
+            matTransicaoAFD[indiceNo][i + 2] = aux2;
+            aux = [];
+          }
+        }
+        console.table(matTransicaoAFD);
+        //Constrói os novos estados
+        if (nos.length != matEstado.length) {
+          //Calcula novas localizações para os estados
+          for (i = 0; i < matEstado.length; i++) {
+
+
+
+
+
+
+
+            /// ARRUMAR ISSO //////////////////
+            //Dá erro ao tentar converter um AFD
+
+
+
+
+
+
+
+
+            objs.nodeDataArray[cont].text = "Q" + i;
+          }
+        }
+        cont = 0;
+        //Constrói as novas transições
+
+        objs.linkDataArray.splice(0, objs.linkDataArray.length);
+
+        console.log(JSON.stringify(objs));
+        for (i = 0; i < matTransicaoAFD.length; i++) {
+          for (j = 0; j < alfabeto.length; j++) {
+            if (!(matTransicaoAFD[i][j] == null || matTransicaoAFD[i][j].length == 0)) {
+              /*objs.linkDataArray[cont].from = i *-1;
+              objs.linkDataArray[cont].to = matTransicaoAFD[i][j+2]*-1;
+              objs.linkDataArray[cont].text = alfabeto[j];*/
+
+              objs.linkDataArray.push({ from: (i + 1) * -1, to: (matTransicaoAFD[i][j + 2] + 1) * -1, text: alfabeto[j] });
+              cont++;
+            }
+          }
+        }
+        document.getElementById("mySavedModel").value = JSON.stringify(objs);
+        console.log(JSON.stringify(objs));
+        load();
+        setInitial2(matEstado[0][0] * -1);
+        for (i = 0; i < matTransicaoAFD.length; i++) {
+          if (matTransicaoAFD[i][1] == 1) {
+            setFinal2((i + 1) * -1);
+          }
+        }
+      }
+      else {
+        alert("Não é possível converter o autômato finito. Pois não há um nó inicial ou pelo menos um nó final.")
+      }
+    }
+
+    $(document).ready(function () {
+      //var max_fields = 10; //maximum input boxes allowed
+      var wrapper = $(".input_fields_wrap"); //Fields wrapper
+      var add_button = $(".add_field_button"); //Add button ID
+
+      var x = 1; //initlal text box count
+      $(add_button).click(function (e) { //on add input button click
+        e.preventDefault();
+        //if (x < max_fields) { //max input box allowed
+        x++; //text box increment
+        $("#mult").append('<tr><td><input type="text" name="strings" onkeyup="simularMultiplos()"></td><td class="aceita"></td><td align="center"><a href="#" class="remove_field"><i class="fas fa-trash-alt"></i></a></td></tr>'); //add input box
+        //}
+      });
+
+      $(wrapper).on("click", ".remove_field", function (e) { //user click on remove text
+        e.preventDefault(); $(this).parent().parent('tr').remove(); x--;
+      })
+    });
+
+    function CapturaParametrosUrl() {
+      var url = window.location.href;
+      var res = url.split('?');
+      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+      var objs = JSON.parse(myDiagram.model.toJson());
+
+      if (res[1] !== undefined) {
+        var parametros = res[1].split('=');
+        if (parametros[0] == 'remetente' && (parametros[1] == "gramatica" || parametros[1] == "expressao_r")) {
+          var estados = JSON.parse(sessionStorage.getItem('est'));
+          var transicoes = JSON.parse(sessionStorage.getItem('tr'));
+          console.log(estados);
+          console.log(transicoes);
+          var i;
+          objs.nodeDataArray.splice(0, objs.nodeDataArray.length);
+          for (i = 0; i < estados.length; i++) {
+            objs.nodeDataArray.push({ text: estados[i], key: (i + 1) * -1 });
+          }
+          objs.linkDataArray.splice(0, objs.linkDataArray.length);
+          for (i = 0; i < transicoes.length; i++) {
+            var de, para;
+            if (parametros[1] == "expressao_r") {
+              de = (transicoes[i][0] + 1) * -1;
+              para = (transicoes[i][1] + 1) * -1;
+            }
+            else {
+              de = pesquisaIndice(objs.nodeDataArray, transicoes[i][0]);
+              para = pesquisaIndice(objs.nodeDataArray, transicoes[i][1]);
+            }
+            objs.linkDataArray.push({ from: de, to: para, text: transicoes[i][2] });
+          }
+          document.getElementById("mySavedModel").value = JSON.stringify(objs);
+          console.log(JSON.stringify(objs));
+          load();
+          var ini, fim;
+          if (parametros[1] == "expressao_r") {
+            ini = (JSON.parse(sessionStorage.getItem('inicial')) + 1) * -1;
+            fim = (JSON.parse(sessionStorage.getItem('final')) + 1) * -1;
+          }
+          else {
+            ini = pesquisaIndice(objs.nodeDataArray, 'S');
+            fim = pesquisaIndice(objs.nodeDataArray, 'Final');
+          }
+          setInitial2(ini);
+          setFinal2(fim);
+        }
+      }
+    }
+
+
+    function toXML() {
+      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+      var objs = JSON.parse(myDiagram.model.toJson());
+      var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!--Created with JFLAP 7.1.--><structure>&#13;<type>fa</type>&#13\;<automaton>&#13\;<!--The list of states.-->&#13;";
+      var i, loc;
+      for (i = 0; i < objs.nodeDataArray.length; i++) {
+        loc = objs.nodeDataArray[i].loc.split(' ');
+        xml += "<state id=\"" + ((objs.nodeDataArray[i].key * -1) - 1) + "\" name=\"" + objs.nodeDataArray[i].text + "\">&#13;<x>" + loc[0].substr(0, 5) + "</x>&#13;<y>" + loc[1].substr(0, 5) + "</y>&#13;";
+        if (objs.nodeDataArray[i].key == inicial) {
+          xml += "<initial/>&#13;";
+        }
+        if (pesquisa(finais, objs.nodeDataArray[i].key)) {
+          xml += "<final/>&#13;";
+        }
+        xml += "</state>&#13;";
+      }
+      xml += "<!--The list of transitions.-->&#13;";
+      for (i = 0; i < objs.linkDataArray.length; i++) {
+        xml += "<transition>&#13;<from>" + ((objs.linkDataArray[i].from * -1) - 1) + "</from>&#13;<to>" + ((objs.linkDataArray[i].to * -1) - 1) + "</to>&#13;";
+        if (objs.linkDataArray[i].text == '@') {
+          xml += "<read/>&#13;";
+        }
+        else {
+          xml += "<read>" + objs.linkDataArray[i].text + "</read>&#13;";
+        }
+        xml += "</transition>&#13;";
+      }
+      xml += "</automaton>&#13;</structure>";
+      parser = new DOMParser();
+      //xml = parser.parseFromString(xml, "text/xml");
+      console.log(xml);
+
+      var saveData = (function () {
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        return function (data, fileName) {
+          blob = new Blob([data], { type: " text / plain; charset = utf-8 " }),
+            url = window.URL.createObjectURL(blob);
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        };
+      }());
+      var data = xml,
+        fileName = "automato.jff";
+
+      saveData(data, fileName);
+
+    }
+
+    function readFile(file) {
+      return new Promise((resolve, reject) => {
+        let fr = new FileReader();
+        fr.onload = x => resolve(fr.result);
+        fr.readAsText(file);
+      })
+    }
+
+    async function read(input) {
+      var msg = await readFile(input.files[0]);
+      console.log(msg);
+
+      parser = new DOMParser();
+      xmlDoc = parser.parseFromString(msg, "text/xml");
+      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+      var objs = JSON.parse(myDiagram.model.toJson());
+      var i, simbolo, ini, fim = [];
+      var elementos = xmlDoc.getElementsByTagName('state');
+      var transicoes = xmlDoc.getElementsByTagName('transition');
+      console.log(elementos);
+      objs.nodeDataArray.splice(0, objs.nodeDataArray.length);
+      objs.linkDataArray.splice(0, objs.linkDataArray.length);
+      for (i = 0; i < elementos.length; i++) {
+        if (elementos[i].getElementsByTagName('initial').length > 0) {
+          ini = (elementos[i].getAttribute('id') + 1) * -1;
+        }
+        if (elementos[i].getElementsByTagName('final').length > 0) {
+          fim.push((elementos[i].getAttribute('id') + 1) * -1);
+        }
+        objs.nodeDataArray.push({ text: elementos[i].getAttribute('name'), key: (elementos[i].getAttribute('id') + 1) * -1, loc: elementos[i].getElementsByTagName('x')[0].innerHTML + ' ' + elementos[i].getElementsByTagName('y')[0].innerHTML });
+      }
+      for (i = 0; i < transicoes.length; i++) {
+        simbolo = transicoes[i].getElementsByTagName('read')[0].innerHTML;
+        if (simbolo == "") {
+          simbolo = "@";
+        }
+        objs.linkDataArray.push({ from: (transicoes[i].getElementsByTagName('from')[0].innerHTML + 1) * -1, to: (transicoes[i].getElementsByTagName('to')[0].innerHTML + 1) * -1, text: simbolo });
+      }
+      document.getElementById("mySavedModel").value = JSON.stringify(objs);
+      console.log(JSON.stringify(objs));
+      load();
+      setInitial2(ini);
+      for (i = 0; i < fim.length; i++) {
+        setFinal2(fim[i]);
+      }
+    }
+
+
+    //---------------------------------------CONVERSAO PARA GRAMATICA
+    function findNodeText(ident, nodes) {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].key == ident) return nodes[i].text;
+      }
+    }
+
+    function converteGramatica() {
+      var objs = JSON.parse(myDiagram.model.toJson());
+      var links = objs.linkDataArray;
+      var nodes = objs.nodeDataArray;
+      //console.log(links)
+      var resultado;
+      let i;
+      resultado = [];
+      for (i = 0; i < links.length; i++) {
+        if (links[i].text == "@") {
+          let n1 = links[i].from;
+          let n2 = links[i].to;
+          let t1 = findNodeText(n1, nodes);
+          let t2 = findNodeText(n2, nodes);
+          resultado[i] = [t1, t2];
+        }
+        else {
+          let n1 = links[i].from;
+          let n2 = links[i].to;
+          let t1 = findNodeText(n1, nodes);
+          let t2 = findNodeText(n2, nodes);
+          resultado[i] = [t1, links[i].text, t2];
+        }
+      }
+      for (let i2 = 0; i2 < finais.length; i2++) {
+        resultado[i] = [findNodeText(finais[i2], nodes), "@"];
+        i++;
+      }
+      var alfabeto = "ABCDEFGHIJKLMNOPQRTUVWXYZ";
+      for (i = 0; i < resultado.length; i++) {
+        var j, aux;
+        for (j = 0; j < resultado[i].length; j++) {
+          if (resultado[i][j].length == 2) {
+            aux = resultado[i][j].substr(1, 2);
+            if (aux == 0) {
+              resultado[i][j] = "S";
+            }
+            else {
+              resultado[i][j] = alfabeto[aux];
+            }
+          }
+        }
+      }
+      console.log(resultado);
+      var transicoes = JSON.stringify(resultado);
+      sessionStorage.clear();
+      sessionStorage.setItem('tr', transicoes);
+      window.open("../reg_gramm/index.html?remetente=automato", "_blank");
+    }
+
+    //---------------------------------------CONVERSAO PARA GRAMATICA
+
+
+    //---------------------------------------CONVERSAO PARA EXPRESSAO REGULAR
+
+    function juntaTransicoes(links, num) {
+      //var fech = fechamento;
+      var vetT = [];
+      let b = 0;
+      for (let j2 = 0; j2 < links.length; j2++) {
+        var transicao = "";
+        aux = 0;
+        if (links[j2].from == num) {
+          toAux = links[j2].to;
+          for (let j3 = 0; j3 < links.length; j3++) {
+            if ((links[j3].from == num) && (links[j3].to == toAux)) {
+              if (num == toAux) {
+                if (aux == 0) {
+                  transicao += ("(" + links[j3].text + ")*");
+                  fechamento += ("(" + links[j3].text + ")*");
+                }
+                else {
+                  transicao += ("|(" + links[j3].text + ")*");
+                  fechamento += ("|(" + links[j3].text + ")*");
+                }
+                aux++;
+                links[j3].text = "(" + links[j3].text + ")*";
+              }
+              else {
+                if (aux == 0) transicao += ("(" + links[j3].text + ")");
+                else transicao += ("|(" + links[j3].text + ")")
+                aux++;
+              }
+            }
+          }
+          if (aux > 1) {
+            if (num == toAux) {
+              fechamento = "(" + fechamento + ")*";
+            }
+            vetT[b] = []
+            vetT[b] = [num, toAux, ("(" + transicao + ")")]
+            b++;
+            for (let j = 0; j < links.length; j++) {
+              if ((links[j].from == num) && (links[j].to == toAux)) {
+                links.splice(j, 1);
+                if (j <= j2) j2--;
+                j--;
+              }
+            }
+          }
+        }
+      }
+      var b2 = 0;
+      while (vetT.length != 0) {
+        links[links.length] = [];
+        links[links.length - 1].from = vetT[b2][0];
+        links[links.length - 1].to = vetT[b2][1];
+        links[links.length - 1].text = vetT[b2][2];
+        vetT.splice(b2, 1);
+      }
+    }
+
+    /*function trataFechamento(links, num, fechamentos){
+      for(let i = 0; i < links.length; i++){
+        if((links[i].to == num) && (links[i].from == num)){
+          fechamento[fechamento.length] = links[i].text
+        }
+      }
+    }*/
+
+    function converteExpressao() {
+      var aux1 = 0; //Sinalizador para o estado inicial
+      var aux2 = 0; //Sinalizador para os estados finais
+      var objs = JSON.parse(myDiagram.model.toJson()); //Pega o Json
+      var links = objs.linkDataArray; // Pega todas as transicoes
+      //var nodes = objs.nodeDataArray; // Pega todos os estados
+
+      //Verificar se o estado inicial é final
+      for (let i = 0; i < finais.length; i++) {
+        if (finais[i] == inicial) {
+          aux1 = 1;
+          break;
+        }
+      }
+      if (aux1 == 0) {
+        //Verifica se o estado inicial tem transicoes que entram nele
+        for (let i = 0; i < links.length; i++) {
+          if (links[i].to == inicial) {
+            aux1 = 1;
+            break;
+          }
+        }
+      }
+      //Se aux1 = 1, cria um novo estado e faz uma transicao vazia entre ele e o estado inicial. Esse novo estado vira inicial
+      if (aux1 == 1) {
+        links[links.length] = []
+        links[links.length - 1].from = 0;
+        links[links.length - 1].to = inicial;
+        links[links.length - 1].text = "";
+        inicial = 0;
+      }
+      //Verifica se existe mais de um estado final
+      if (finais.length > 1) aux2 = 1;
+      else {
+        //Verifica se o unico estado final tem transicoes saindo dele
+        for (let i = 0; i < links.length; i++) {
+          if (links[i].from == finais[0]) {
+            aux2 = 1;
+            break;
+          }
+        }
+      }
+      //Se aux2 = 1, cria um novo estado e faz uma transicao vazia entre os estados finais e ele. Esse novo estado vira final
+      if (aux2 == 1) {
+        for (let i = 0; i < finais.length; i++) {
+          links[links.length] = []
+          links[links.length - 1].from = finais[i];
+          links[links.length - 1].to = -100000;
+          links[links.length - 1].text = "";
+        }
+        finais.splice(0, finais.length);
+        finais[0] = -100000;
+      }
+
+      console.log(links);
+      //Excluir estado por estado, checar suas transições, e tratá-las em casos
+      var nodes = objs.nodeDataArray; // Pega todos os estados
+      //var fechamentos = []; // Irá armazenar fechamentos quando tiver
+      for (var i = 0; i < nodes.length; i++) {
+        fechamento = "";
+        num = nodes[i].key; //Pega a chave do estado que será eliminado
+        if ((num != finais[0]) && (num != inicial)) {
+          //Verifica se mais de uma transição sai desse estado para um mesmo estado, e junta elas
+          juntaTransicoes(links, num);
+          console.log(fechamento);
+          //Verifica se tem fechamento
+          //trataFechamento(links, num, fechamentos);
+          //Verifica as transições do estado
+          for (let j = 0; j < links.length; j++) {
+            //Verifica se a transição vai para o estado que será excluído
+            if (links[j].to == num) {
+              num2 = links[j].from; //Pega a chave do estado de onde a transição vem
+              if (num2 != num) {
+                texto1 = links[j].text; //Pega o texto da transição
+                //Irá passar arrumando as transições que saem do estado que será removido
+                for (let k = 0; k < links.length; k++) {
+                  if (links[k].from == num) {
+                    if (links[k].to != num) {
+                      texto2 = links[k].text; // Pega texto da transição
+                      //Liga as trasições em que o estado está no meio
+                      links[links.length] = [];
+                      links[links.length - 1].from = links[j].from;
+                      links[links.length - 1].to = links[k].to;
+                      links[links.length - 1].text = texto1 + fechamento + texto2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          //Exclui todas as transições que estão ligadas ao estado eliminado
+          for (let j = 0; j < links.length; j++) {
+            if ((links[j].from == num) || (links[j].to == num)) {
+              links.splice(j, 1);
+              j--;
+            }
+          }
+          console.log(links);
+        }
+      }
+      juntaTransicoes(links, inicial);
+      console.log(links);
+      var er = JSON.stringify(links[0].text);
+      sessionStorage.clear();
+      sessionStorage.setItem('er', er);
+      window.open("../exp_reg.html?remetente=automato", "_blank");
+
+    }
+
+
+    //---------------------------------------CONVERSAO PARA EXPRESSAO REGULAR
+
+  </script>
+</head>
+
+<body onload="init(); CapturaParametrosUrl();">
+
+  <div class="header">
+    <a href="../index.html" class="logo" target="blank">LFA Project</a>
+    <div class="header-right">
+      <a class="nav-link dropdown-toggle a1" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        Conversões
+      </a>
+      <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <a class="dropdown-item" onclick="AFNDtoAFD()">Converter para AFD</a>
+        <a class="dropdown-item" onclick="converteGramatica()">Converter para Gramática</a>
+        <a class="dropdown-item" onclick="converteExpressao()">Converter para Expressão Regular</a>
+      </div>
+      <a class="a1" href="../exp_reg.html" target="blank">Expressões Regulares</a>
+      <a class="a1" href="../reg_gramm/index.html">Gramática</a>
+      <a class="a1" href="">Autômatos Finitos</a>
+    </div>
+  </div>
+  <br>
+  <h2 class="text-center"> Autômatos Finitos </h2>
+  <div id="sample" class="col-md-8 float-left">
+    <div id="myDiagramDiv" style="border: solid 1px black; width: 100%; height: 500px"></div>
+  </div>
+  <div class="col-md-4 float-right">
+    <div>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th class="text-center" colspan="3">
+              Entrada única
+            </th>
+          </tr>
+          <tr>
+            <th scope="col">String</th>
+            <th scope="col"></th>
+            <th scope="col">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="form-control" type="text" id="string" style="" /></td>
+            <td><button class="btn btn-primary" id="SaveButton" onclick="simular()">Verificar</button></td>
+            <td>
+              <div id="result"></div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td align="center" colspan="3">
+              <button class="btn btn-secondary" id="comecar"
+                onclick="simular(); passoapasso(); bloqueiaBotao();">Simular</button>
+              <button class="btn btn-secondary" id="ant"
+                onclick="contPasso--;contPasso--;passoapasso(); bloqueiaBotao();">Anterior</button>
+              <button class="btn btn-secondary" id="prox" onclick="passoapasso(); bloqueiaBotao();">Próximo</button>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <!--<button onclick="load()">Load</button>-->
+    </div>
+    <textarea id="mySavedModel" style="width:100%;height:300px;display: none;">
+      { "class": "GraphLinksModel",
+        "nodeDataArray": [ 
+      {"text":"Q0", "key":-1, "loc":"479 207.8181915283203"}
+      ],
+        "linkDataArray": [ 
+      ]}
+    </textarea>
+    <br><br>
+    <div class="input_fields_wrap">
+      <table class="table table-striped table-bordered" id="multiplos">
+        <thead>
+          <tr>
+            <th class="text-center" colspan="3">
+              Múltiplas entrada
+            </th>
+          </tr>
+          <tr>
+            <th scope="col">String</th>
+            <th scope="col">Aceita</th>
+            <th scope="col" align="center">Remover</th>
+          </tr>
+        </thead>
+        <tbody id="mult">
+          <tr>
+            <td><input type="text" name="strings" onkeyup="simularMultiplos()"></td>
+            <td class="aceita"></td>
+            <td></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td align="center" colspan="3">
+              <button class="add_field_button btn btn-primary">Adicionar mais campos</button>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <input type="file" onchange="read(this)" />
+</body>
+
+</html>
