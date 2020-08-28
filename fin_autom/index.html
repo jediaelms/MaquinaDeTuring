@@ -241,7 +241,11 @@
       }
 
       function okNameLink(textblock, oldstr, newstr) {
-        return newstr.length <= 1;
+        console.log("Text "+newstr);
+        if(newstr[1] == ";" && newstr[3] == ";" && newstr.length == 5){
+          return true;
+        }
+        return false; 
       }
       // replace the default Link template in the linkTemplateMap
       myDiagram.linkTemplate =
@@ -269,8 +273,8 @@
                 textAlign: "center",
                 font: "9pt helvetica, arial, sans-serif",
                 margin: 4,
-                editable: true  // enable in-place editing
-                //textValidation: okNameLink
+                editable: true,  // enable in-place editing
+                textValidation: okNameLink
               },
               // editing the text automatically updates the model data
               new go.Binding("text").makeTwoWay())
