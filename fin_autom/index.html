@@ -290,7 +290,12 @@
         var links = objs.linkDataArray;
         console.log(objs);
         console.log(links);
-
+        var texto;
+        links.forEach(function (item) {
+          texto = item.text.split(";");
+          item.text = texto;
+        });
+        console.log(links);
         if (simulador(links, -1, 0, inicial, "L")) {
           document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
         }
