@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css?family=Yantramanav:100');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400');
+
+html, body{
+	margin:0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+
+.intro{
+	height: 100%;
+	width: 100%;
+	margin: auto;
+	background: url(img/lfa.png) no-repeat 50% 50%;
+	display: table; /*tira margem de cima*/
+	top: 0;
+	background-size: cover; /*ajustar a imagem de fundo*/
+}
+
+.intro .inner{
+	display: table-cell;
+	vertical-align: middle;
+	width: 100%;
+	max-width: none;
+}
+
+.content{
+	max-width: 600px;
+	margin: 0 auto;
+	text-align: center;
+	padding-bottom: 28%;
+}
+
+.content h1{
+	font-family: 'Yantramanav', sans-serif;
+	font-size: 750%;
+	font-weight: 200;
+	color: #E1EFE9;
+	line-height: 70%;
+}
+
+#sec{
+	margin-top: 50px;
+}
+
+.btn{
+	font-family: 'Montserrat', sans-serif;
+	font-size: 170%;
+	font-weight: 500;
+	color: #000000;
+	text-transform: uppercase;
+	text-decoration: none;
+	border: solid #000000;
+	padding: 10px 20px;
+	border-radius: 9px;
+	transition: all 0.5s
+	margin-top 20px;
+}
+
+.btn:hover{
+	color:#4F4F4F;
+	border:solid #4F4F4F 2px;
+	font-size: 180%;
+}
+
+/*--- Media Queries --*/
+@media screen and (max-width: 900px) {
+	.content{
+
+	}
+}
+@media screen and (max-width: 768px) {
+
+}
+@media screen and (max-width: 480px) {
+	
+}
