@@ -437,7 +437,13 @@
       return false;
     }
 
-
+    function trocaCaracter(novoCaracter, posicao){
+      var aux = str.substr(0, posicao);
+      aux = aux.concat(novoCaracter);
+      aux = aux.concat(str.substr((posicao+1),str.length));
+      str = aux;
+      $('#string').val(aux);
+    }
 
     function simulador2(links, cont, from, to, ant) {
       var i = 0;
@@ -461,8 +467,11 @@
           //console.log("\nLink " + i + ": ");
           //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
           if(cont >= 0 || cont < str.length){
-          	valorAnterior = str[cont];
-          	str[cont] = links[i].text[1];
+            //valorAnterior = str[cont];
+            //console.log("String antes: "+str);
+            //str[cont] = links[i].text[1];
+            //console.log("String depois: "+str);
+            trocaCaracter(links[i].text[1], cont);
           }
           if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])) {
             //console.log("\nAchou filho com caractere correspondente");
@@ -472,7 +481,8 @@
           else{
           	cont --;
           	if(cont >= 0 || cont < str.length){
-          		str[cont] = valorAnterior;
+              trocaCaracter(valorAnterior, cont);
+          		//str[cont] = valorAnterior;
           	}    	
           }
         }
