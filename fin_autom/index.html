@@ -241,11 +241,11 @@
       }
 
       function okNameLink(textblock, oldstr, newstr) {
-        console.log("Text "+newstr);
-        if(newstr[1] == ";" && newstr[3] == ";" && newstr.length == 5){
+        console.log("Text " + newstr);
+        if (newstr[1] == ";" && newstr[3] == ";" && newstr.length == 5) {
           return true;
         }
-        return false; 
+        return false;
       }
       // replace the default Link template in the linkTemplateMap
       myDiagram.linkTemplate =
@@ -437,10 +437,10 @@
       return false;
     }
 
-    function trocaCaracter(novoCaracter, posicao){
+    function trocaCaracter(novoCaracter, posicao) {
       var aux = str.substr(0, posicao);
       aux = aux.concat(novoCaracter);
-      aux = aux.concat(str.substr((posicao+1),str.length));
+      aux = aux.concat(str.substr((posicao + 1), str.length));
       str = aux;
       $('#string').val(aux);
     }
@@ -453,10 +453,10 @@
 
       if (ant == "D") cont++;
       else if (ant == "E") cont--;
-      
-      if(buscaFinal(finais, to)){ // Se chegou em um final, Sucesso!
-      	caminho.push(to);
-      	return true;
+
+      if (buscaFinal(finais, to)) { // Se chegou em um final, Sucesso!
+        caminho.push(to);
+        return true;
       }
 
 
@@ -466,7 +466,7 @@
         if (links[i].from == to && ((links[i].text[0] == str[cont]) || (links[i].text[0] == "@"))) {
           //console.log("\nLink " + i + ": ");
           //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
-          if(cont >= 0 || cont < str.length){
+          if (cont >= 0 || cont < str.length) {
             //valorAnterior = str[cont];
             //console.log("String antes: "+str);
             //str[cont] = links[i].text[1];
@@ -478,12 +478,12 @@
             caminho.push(to);
             return true;
           }
-          else{
-          	cont --;
-          	if(cont >= 0 || cont < str.length){
+          else {
+            cont--;
+            if (cont >= 0 || cont < str.length) {
               trocaCaracter(valorAnterior, cont);
-          		//str[cont] = valorAnterior;
-          	}    	
+              //str[cont] = valorAnterior;
+            }
           }
         }
       }
@@ -857,7 +857,7 @@
     function toXML() {
       document.getElementById("mySavedModel").value = myDiagram.model.toJson();
       var objs = JSON.parse(myDiagram.model.toJson());
-      var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!--Created with JFLAP 7.1.--><structure>&#13;<type>fa</type>&#13\;<automaton>&#13\;<!--The list of states.-->&#13;";
+      var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!--Created with JFLAP 7.1.--><structure>&#13;<type>turing</type>&#13\;<automaton>&#13\;<!--The list of states.-->&#13;";
       var i, loc;
       for (i = 0; i < objs.nodeDataArray.length; i++) {
         loc = objs.nodeDataArray[i].loc.split(' ');
@@ -873,12 +873,29 @@
       xml += "<!--The list of transitions.-->&#13;";
       for (i = 0; i < objs.linkDataArray.length; i++) {
         xml += "<transition>&#13;<from>" + ((objs.linkDataArray[i].from * -1) - 1) + "</from>&#13;<to>" + ((objs.linkDataArray[i].to * -1) - 1) + "</to>&#13;";
-        if (objs.linkDataArray[i].text == '@') {
+        if (objs.linkDataArray[i].text[0] == '@') {
           xml += "<read/>&#13;";
         }
         else {
-          xml += "<read>" + objs.linkDataArray[i].text + "</read>&#13;";
+          xml += "<read>" + objs.linkDataArray[i].text[0] + "</read>&#13;";
         }
+        if (objs.linkDataArray[i].text[1] == '@') {
+          xml += "<write/>&#13;";
+        }
+        else {
+          xml += "<write>" + objs.linkDataArray[i].text[0] + "</write>&#13;";
+        }
+
+        if (objs.linkDataArray[i].text[2] == "P") {
+          xml += "<move>S</move>&#13;";
+        }
+        if (objs.linkDataArray[i].text[2] == "E") {
+          xml += "<move>L</move>&#13;";
+        }
+        if (objs.linkDataArray[i].text[2] == "D") {
+          xml += "<move>R</move>&#13;";
+        }
+
         xml += "</transition>&#13;";
       }
       xml += "</automaton>&#13;</structure>";
@@ -900,7 +917,7 @@
         };
       }());
       var data = xml,
-        fileName = "automato.jff";
+        fileName = "Turing.jff";
 
       saveData(data, fileName);
 
@@ -922,7 +939,7 @@
       xmlDoc = parser.parseFromString(msg, "text/xml");
       document.getElementById("mySavedModel").value = myDiagram.model.toJson();
       var objs = JSON.parse(myDiagram.model.toJson());
-      var i, simbolo, ini, fim = [];
+      var i, simbolo = [3], ini, fim = [];
       var elementos = xmlDoc.getElementsByTagName('state');
       var transicoes = xmlDoc.getElementsByTagName('transition');
       console.log(elementos);
@@ -938,11 +955,25 @@
         objs.nodeDataArray.push({ text: elementos[i].getAttribute('name'), key: (elementos[i].getAttribute('id') + 1) * -1, loc: elementos[i].getElementsByTagName('x')[0].innerHTML + ' ' + elementos[i].getElementsByTagName('y')[0].innerHTML });
       }
       for (i = 0; i < transicoes.length; i++) {
-        simbolo = transicoes[i].getElementsByTagName('read')[0].innerHTML;
-        if (simbolo == "") {
-          simbolo = "@";
+        simbolo[0] = transicoes[i].getElementsByTagName('read')[0].innerHTML;
+        simbolo[1] = transicoes[i].getElementsByTagName('write')[0].innerHTML;
+        simbolo[2] = transicoes[i].getElementsByTagName('move')[0].innerHTML;
+        if (simbolo[0] == "") {
+          simbolo[0] = "@";
         }
-        objs.linkDataArray.push({ from: (transicoes[i].getElementsByTagName('from')[0].innerHTML + 1) * -1, to: (transicoes[i].getElementsByTagName('to')[0].innerHTML + 1) * -1, text: simbolo });
+        if (simbolo[1] == "") {
+          simbolo[1] = "@";
+        }
+        if (simbolo[2] == "S") {
+          simbolo[2] = "P";
+        }
+        if (simbolo[2] == "L") {
+          simbolo[2] = "E";
+        }
+        if (simbolo[2] == "R") {
+          simbolo[2] = "D";
+        }
+        objs.linkDataArray.push({ from: (transicoes[i].getElementsByTagName('from')[0].innerHTML + 1) * -1, to: (transicoes[i].getElementsByTagName('to')[0].innerHTML + 1) * -1, text: (simbolo[0] + ";" + simbolo[1] + ";" + simbolo[2]) });
       }
       document.getElementById("mySavedModel").value = JSON.stringify(objs);
       console.log(JSON.stringify(objs));
