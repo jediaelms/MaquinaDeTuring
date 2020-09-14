@@ -40,6 +40,28 @@
     var caminho = [];
     var contPasso = 0;
     var str = "";
+    var tipoMT = 0; // Tipo da maquina de turing: 0, comum, 1, Estendida
+    var numeroAuxiliar = 100; 
+    var numerolistas = 2;
+    var listas[numerolistas][numeroAuxiliar];
+
+
+    function inicializaListas(){
+      var k = 0;
+      var l = (numeroAuxiliar/2) - 1;
+      var b = 0
+      var a = 0
+      for(; a < numerolistas; a ++){
+        for(; b < numeroAuxiliar; b ++){
+          listas[a][b] = "@"
+        }
+      }
+      while(k < str.length){
+        listas[0][l] = str[k]
+        k++;
+        l++;
+      }
+    }
 
     function setInitial(e, obj) {
       myDiagram.commit(function (d) {
