@@ -41,22 +41,22 @@
     var contPasso = 0;
     var str = "";
     var tipoMT = 0; // Tipo da maquina de turing: 0, comum, 1, Estendida
-    var numeroAuxiliar = 100; 
+    var numeroAuxiliar = 100;
     var numerolistas = 2;
-    var listas[numerolistas][numeroAuxiliar];
+    //var listas[numerolistas][numeroAuxiliar];
 
 
-    function inicializaListas(){
+    function inicializaListas() {
       var k = 0;
-      var l = (numeroAuxiliar/2) - 1;
+      var l = (numeroAuxiliar / 2) - 1;
       var b = 0
       var a = 0
-      for(; a < numerolistas; a ++){
-        for(; b < numeroAuxiliar; b ++){
+      for (; a < numerolistas; a++) {
+        for (; b < numeroAuxiliar; b++) {
           listas[a][b] = "@"
         }
       }
-      while(k < str.length){
+      while (k < str.length) {
         listas[0][l] = str[k]
         k++;
         l++;
@@ -300,8 +300,8 @@
                 textAlign: "center",
                 font: "9pt helvetica, arial, sans-serif",
                 margin: 4,
-                editable: true,  // enable in-place editing
-                textValidation: okNameLink
+                editable: true  // enable in-place editing
+                //textValidation: okNameLink
               },
               // editing the text automatically updates the model data
               new go.Binding("text").makeTwoWay())
@@ -319,13 +319,22 @@
         document.getElementById("mySavedModel").value = myDiagram.model.toJson();
         var objs = JSON.parse(myDiagram.model.toJson());
         var links = objs.linkDataArray;
+        var i;
         console.log(objs);
         console.log(links);
         var texto;
         links.forEach(function (item) {
-          texto = item.text.split(";");
+          texto = item.text.split("|");
           item.text = texto;
         });
+        links.forEach(function (item) {
+          for (i = 0; i < item.text.length; i++) {
+            console.log(item.text[i]);
+            item.text[i] = item.text[i].split(";");
+          }
+        });
+
+
         console.log(links);
         if (simulador2(links, -1, 0, inicial, "D")) {
           document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
@@ -490,29 +499,29 @@
       for (i = 0; i < links.length; i++) {
         //console.log("\nlinks[i].from = " + links[i].from + ", to = " + to + ", links[i].text = " + links[i].text + ", str[cont] = " + str[cont]);
         //console.log("\nAceitos: ");
-        if(cont == -1 || cont ==  str.length){ //Chegou em um branco
-          if(links[i].text[0] == "@" && links[i].from == to){
-            if(buscaFinal(finais, links[i].to)){
-                if(simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])){
-                  caminho.push(to);
-                  return true;
-                }
+        if (cont == -1 || cont == str.length) { //Chegou em um branco
+          if (links[i].text[0][0] == "@" && links[i].from == to) {
+            if (buscaFinal(finais, links[i].to)) {
+              if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[0][0][2])) {
+                caminho.push(to);
+                return true;
+              }
             }
           }
         }
 
-        else{
-          if (links[i].from == to && ((links[i].text[0] == str[cont]))) {
+        else {
+          if (links[i].from == to && ((links[i].text[0][0] == str[cont]))) {
             //console.log("\nLink " + i + ": ");
             //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
             if (cont >= 0 || cont < str.length) {
               //valorAnterior = str[cont];
               //console.log("String antes: "+str);
-              //str[cont] = links[i].text[1];
+              //str[cont] = links[i].text[0][1];
               //console.log("String depois: "+str);
-              trocaCaracter(links[i].text[1], cont);
+              trocaCaracter(links[i].text[0][1], cont);
             }
-            if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])) {
+            if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[0][2])) {
               //console.log("\nAchou filho com caractere correspondente");
               caminho.push(to);
               return true;
@@ -743,11 +752,11 @@
     function toXML() {
       document.getElementById("mySavedModel").value = myDiagram.model.toJson();
       var objs = JSON.parse(myDiagram.model.toJson());
-      
+
       objs.linkDataArray.forEach(function (item) {
-          texto = item.text.split(";");
-          item.text = texto;
-        });
+        texto = item.text.split(";");
+        item.text = texto;
+      });
       var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!--Created with JFLAP 7.1.--><structure>&#13;<type>turing</type>&#13\;<automaton>&#13\;<!--The list of states.-->&#13;";
       var i, loc;
       for (i = 0; i < objs.nodeDataArray.length; i++) {
@@ -830,6 +839,11 @@
       xmlDoc = parser.parseFromString(msg, "text/xml");
       document.getElementById("mySavedModel").value = myDiagram.model.toJson();
       var objs = JSON.parse(myDiagram.model.toJson());
+      console.log(objs);
+      objs.linkDataArray.forEach(function (item) {
+        texto = item.text.split(";");
+        item.text = texto;
+      });
       var i, simbolo = [3], ini, fim = [];
       var elementos = xmlDoc.getElementsByTagName('state');
       var transicoes = xmlDoc.getElementsByTagName('transition');
@@ -885,11 +899,11 @@
     <h2 class="text-center"> Máquina de Turing </h2>
   </div>
   <br>
- 
+
   <div id="sample" class="col-md-8 float-left">
     <div id="myDiagramDiv" style="border: solid 1px black; width: 100%; height: 500px"></div>
   </div>
-  
+
   <div class="col-md-4 float-right">
     <div>
       <table class="table table-striped table-bordered">
@@ -917,7 +931,8 @@
             <td colspan="3">
               <div>
                 <span>Fita:</span>
-                <div id="fita" type="text" class="input-div input-block-level monospaceRegex" placeholder="See if this fits">
+                <div id="fita" type="text" class="input-div input-block-level monospaceRegex"
+                  placeholder="See if this fits">
                   <font class="nextSymbol">b</font>aa
                 </div>
               </div>
