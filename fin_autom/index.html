@@ -12,6 +12,11 @@
     .highlight {
       background-color: yellow;
     }
+
+    .nextSymbol {
+      background-color: lightgreen;
+      font-weight: bold;
+    }
   </style>
   <link rel="stylesheet" type="text/css" href="../reg_gramm/css/css_gramm.css">
   <script src="release/go.js"></script>
@@ -857,6 +862,11 @@
     function toXML() {
       document.getElementById("mySavedModel").value = myDiagram.model.toJson();
       var objs = JSON.parse(myDiagram.model.toJson());
+      
+      objs.linkDataArray.forEach(function (item) {
+          texto = item.text.split(";");
+          item.text = texto;
+        });
       var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!--Created with JFLAP 7.1.--><structure>&#13;<type>turing</type>&#13\;<automaton>&#13\;<!--The list of states.-->&#13;";
       var i, loc;
       for (i = 0; i < objs.nodeDataArray.length; i++) {
@@ -883,7 +893,7 @@
           xml += "<write/>&#13;";
         }
         else {
-          xml += "<write>" + objs.linkDataArray[i].text[0] + "</write>&#13;";
+          xml += "<write>" + objs.linkDataArray[i].text[1] + "</write>&#13;";
         }
 
         if (objs.linkDataArray[i].text[2] == "P") {
@@ -1251,6 +1261,7 @@
   <div id="sample" class="col-md-8 float-left">
     <div id="myDiagramDiv" style="border: solid 1px black; width: 100%; height: 500px"></div>
   </div>
+  
   <div class="col-md-4 float-right">
     <div>
       <table class="table table-striped table-bordered">
@@ -1272,6 +1283,16 @@
             <td><button class="btn btn-primary" id="SaveButton" onclick="simular()">Verificar</button></td>
             <td>
               <div id="result"></div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div>
+                <span>Fita:</span>
+                <div id="fita" type="text" class="input-div input-block-level monospaceRegex" placeholder="See if this fits">
+                  <font class="nextSymbol">b</font>aa
+                </div>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -1329,8 +1350,14 @@
       </table>
     </div>
   </div>
-
-  <input type="file" onchange="read(this)" />
+  <div class="card">
+    <div class="card-body">
+      Importar arquivo XML:
+      <input type="file" onchange="read(this)" />
+      -------------
+      <button class="btn btn-secondary" onclick="toXML()">Exportar para arquivo XML</button>
+    </div>
+  </div>
 </body>
 
 </html>
