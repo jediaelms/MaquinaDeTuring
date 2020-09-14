@@ -468,26 +468,39 @@
       for (i = 0; i < links.length; i++) {
         //console.log("\nlinks[i].from = " + links[i].from + ", to = " + to + ", links[i].text = " + links[i].text + ", str[cont] = " + str[cont]);
         //console.log("\nAceitos: ");
-        if (links[i].from == to && ((links[i].text[0] == str[cont]) || (links[i].text[0] == "@"))) {
-          //console.log("\nLink " + i + ": ");
-          //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
-          if (cont >= 0 || cont < str.length) {
-            //valorAnterior = str[cont];
-            //console.log("String antes: "+str);
-            //str[cont] = links[i].text[1];
-            //console.log("String depois: "+str);
-            trocaCaracter(links[i].text[1], cont);
+        if(cont == -1 || cont ==  str.length){ //Chegou em um branco
+          if(links[i].text[0] == "@" && links[i].from == to){
+            if(buscaFinal(finais, links[i].to)){
+                if(simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])){
+                  caminho.push(to);
+                  return true;
+                }
+            }
           }
-          if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])) {
-            //console.log("\nAchou filho com caractere correspondente");
-            caminho.push(to);
-            return true;
-          }
-          else {
-            cont--;
+        }
+
+        else{
+          if (links[i].from == to && ((links[i].text[0] == str[cont]))) {
+            //console.log("\nLink " + i + ": ");
+            //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
             if (cont >= 0 || cont < str.length) {
-              trocaCaracter(valorAnterior, cont);
-              //str[cont] = valorAnterior;
+              //valorAnterior = str[cont];
+              //console.log("String antes: "+str);
+              //str[cont] = links[i].text[1];
+              //console.log("String depois: "+str);
+              trocaCaracter(links[i].text[1], cont);
+            }
+            if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[2])) {
+              //console.log("\nAchou filho com caractere correspondente");
+              caminho.push(to);
+              return true;
+            }
+            else {
+              cont--;
+              if (cont >= 0 || cont < str.length) {
+                trocaCaracter(valorAnterior, cont);
+                //str[cont] = valorAnterior;
+              }
             }
           }
         }
