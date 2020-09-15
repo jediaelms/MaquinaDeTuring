@@ -43,7 +43,9 @@
     var tipoMT = 0; // Tipo da maquina de turing: 0, comum, 1, Estendida
     var numeroAuxiliar = 100;
     var numerolistas = 2;
-    //var listas[numerolistas][numeroAuxiliar];
+    var listas = [numerolistas];
+    var contlist = [numerolistas];
+    var valoresanteriores = [numerolistas];
 
 
     function inicializaListas() {
@@ -52,7 +54,9 @@
       var b = 0
       var a = 0
       for (; a < numerolistas; a++) {
-        for (; b < numeroAuxiliar; b++) {
+        contlist[a] = (numeroAuxiliar/2) - 1;
+        listas[a] = [numeroAuxiliar];
+        for (b = 0; b < numeroAuxiliar; b++) {
           listas[a][b] = "@"
         }
       }
@@ -334,14 +338,26 @@
           }
         });
 
+        console.log(links[0].text[0][0])
 
         console.log(links);
-        if (simulador2(links, -1, 0, inicial, "D")) {
-          document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
+        if(tipoMT == 0){
+          if (simulador2(links, -1, 0, inicial, "D")) {
+            document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
+          }
+          else {
+            document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
+          }
         }
-        else {
-          document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
-        }
+        else{
+          inicializaListas();
+          if (simulador3(links, 0, inicial)) {
+            document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
+          }
+          else {
+            document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
+          }
+        }        
       }
       else {
         alert("Não é possível simular o autômato finito. Pois não há um nó inicial ou pelo menos um nó final.")
@@ -535,6 +551,74 @@
             }
           }
         }
+      }
+      caminho.push(0);
+      return false;
+
+    }
+
+
+    function simulador3(links, from, to) {
+      var i = 0;
+      caminho = [];
+      contPasso = 0;
+      let valorAnterior = 0;
+
+
+      if (buscaFinal(finais, to)) { // Se chegou em um final, Sucesso!
+        caminho.push(to);
+        return true;
+      }
+
+      var iaux;
+      var kaux;
+
+      for (i = 0; i < links.length; i++) {
+          
+          if(links[i].from == to){
+            kaux = 0;
+            for (iaux = 0; iaux < numerolistas; iaux ++){
+              if(listas[iaux][contlist[iaux]] != links[i].text[iaux][0]){
+                kaux = 1;
+                break;
+              }
+            }
+          }
+
+          if (kaux == 0) {
+           
+            listas[0][cont] = links[i].text[1];
+
+            for (iaux = 0; iaux < numerolistas; iaux ++){
+              valoresanteriores[iaux] = listas[iaux][contlist[iaux]];
+              listas[iaux][contlist[iaux]] = links[i].text[iaux][1];
+              
+              if(links[i].text[iaux][2] == "D"){
+                contlist[iaux] ++;
+              }
+              else if (links[i].text[iaux][2] == "E"){
+                contlist[iaux] --;
+              }
+            }
+
+            if (simulador3(links, cont, links[i].from, links[i].to)) {
+              caminho.push(to);
+              return true;
+            }
+            else {
+              for (iaux = 0; iaux < numerolistas; iaux ++){
+                listas[iaux][contlist[iaux]] = valoresanteriores[iaux];
+              
+                if(links[i].text[iaux][2] == "D"){
+                  contlist[iaux] --;
+                }
+                else if (links[i].text[iaux][2] == "E"){
+                  contlist[iaux] ++;
+                }
+              }
+            }
+          }
+        
       }
       caminho.push(0);
       return false;
