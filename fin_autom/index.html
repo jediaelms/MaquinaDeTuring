@@ -40,7 +40,7 @@
     var caminho = [];
     var contPasso = 0;
     var str = "";
-    var tipoMT = 0; // Tipo da maquina de turing: 0, comum, 1, Estendida
+    var tipoMT = 1; // Tipo da maquina de turing: 0, comum, 1, Estendida
     var numeroAuxiliar = 100;
     var numerolistas = 2;
     var listas = [numerolistas];
@@ -564,6 +564,8 @@
       contPasso = 0;
       let valorAnterior = 0;
 
+      console.log(listas);
+
 
       if (buscaFinal(finais, to)) { // Se chegou em um final, Sucesso!
         caminho.push(to);
@@ -574,6 +576,8 @@
       var kaux;
 
       for (i = 0; i < links.length; i++) {
+
+        kaux = 1;
           
           if(links[i].from == to){
             kaux = 0;
@@ -587,7 +591,7 @@
 
           if (kaux == 0) {
            
-            listas[0][cont] = links[i].text[1];
+            //listas[0][cont] = links[i].text[1];
 
             for (iaux = 0; iaux < numerolistas; iaux ++){
               valoresanteriores[iaux] = listas[iaux][contlist[iaux]];
@@ -601,13 +605,12 @@
               }
             }
 
-            if (simulador3(links, cont, links[i].from, links[i].to)) {
+            if (simulador3(links, links[i].from, links[i].to)) {
               caminho.push(to);
               return true;
             }
             else {
-              for (iaux = 0; iaux < numerolistas; iaux ++){
-                listas[iaux][contlist[iaux]] = valoresanteriores[iaux];
+              for (iaux = 0; iaux < numerolistas; iaux ++){     
               
                 if(links[i].text[iaux][2] == "D"){
                   contlist[iaux] --;
@@ -615,6 +618,9 @@
                 else if (links[i].text[iaux][2] == "E"){
                   contlist[iaux] ++;
                 }
+
+                listas[iaux][contlist[iaux]] = valoresanteriores[iaux];
+
               }
             }
           }
