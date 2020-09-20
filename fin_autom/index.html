@@ -385,18 +385,35 @@
         $('input[name=strings]').each(function (index, text) {
           str = $(this).val();
           console.log(str + ", index: " + index);
-
-          if (simulador2(links, -1, 0, inicial, "D")) {
-            console.log("String " + str + " aceita.");
-            $(this).parent().parent('tr').css("background-color", "#d0e9c6");
-            $(this).parent().parent().children(".aceita").empty();
-            $(this).parent().parent().children(".aceita").append("<i class='fas fa-check text-success'></i>");
-          } else {
-            console.log("String " + str + " rejeitada.");
-            $(this).parent().parent('tr').css("background-color", "#f2dede");
-            $(this).parent().parent().children(".aceita").empty();
-            $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
+          if(tipoMT == 0){
+            if (simulador2(links, -1, 0, inicial, "D")) {
+              console.log("String " + str + " aceita.");
+              $(this).parent().parent('tr').css("background-color", "#d0e9c6");
+              $(this).parent().parent().children(".aceita").empty();
+              $(this).parent().parent().children(".aceita").append("<i class='fas fa-check text-success'></i>");
+            } else {
+              console.log("String " + str + " rejeitada.");
+              $(this).parent().parent('tr').css("background-color", "#f2dede");
+              $(this).parent().parent().children(".aceita").empty();
+              $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
+           }
           }
+        else{
+          inicializaListas();
+          if (simulador3(links, 0, inicial)) {
+              console.log("String " + str + " aceita.");
+              $(this).parent().parent('tr').css("background-color", "#d0e9c6");
+              $(this).parent().parent().children(".aceita").empty();
+              $(this).parent().parent().children(".aceita").append("<i class='fas fa-check text-success'></i>");
+            } else {
+              console.log("String " + str + " rejeitada.");
+              $(this).parent().parent('tr').css("background-color", "#f2dede");
+              $(this).parent().parent().children(".aceita").empty();
+              $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
+           }
+        }
+
+          
         }
         );
       }
