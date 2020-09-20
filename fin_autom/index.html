@@ -41,7 +41,7 @@
     var contPasso = 0;
     var str = "";
     var tipoMT = 1; // Tipo da maquina de turing: 0, comum, 1, Estendida
-    var numeroAuxiliar = 100;
+    var numeroAuxiliar = 200;
     var numerolistas = 2;
     var listas = [numerolistas];
     var contlist = [numerolistas];
@@ -151,6 +151,17 @@
     }
 
     function init() {
+
+      tipoMT = parseInt(prompt("Selecione o tipo de Máquina de Turing: 0 - Normal ; 1 - Estendida"));
+      if(tipoMT == 1){
+        numerolistas = parseInt(prompt("Digite o número de fitas da Máquina de Turing  Estendida"));
+      }
+
+      console.log(tipoMT);
+      console.log(numerolistas)
+
+        
+
       document.getElementById("prox").disabled = true;
       document.getElementById("ant").disabled = true;
       //if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
@@ -513,8 +524,7 @@
 
 
       for (i = 0; i < links.length; i++) {
-        //console.log("\nlinks[i].from = " + links[i].from + ", to = " + to + ", links[i].text = " + links[i].text + ", str[cont] = " + str[cont]);
-        //console.log("\nAceitos: ");
+ 
         if (cont == -1 || cont == str.length) { //Chegou em um branco
           if (links[i].text[0][0] == "@" && links[i].from == to) {
             if (buscaFinal(finais, links[i].to)) {
@@ -528,17 +538,13 @@
 
         else {
           if (links[i].from == to && ((links[i].text[0][0] == str[cont]))) {
-            //console.log("\nLink " + i + ": ");
-            //console.log("From: " + links[i].from + ", to: " + links[i].to + ", text: " + links[i].text);
+
             if (cont >= 0 || cont < str.length) {
-              //valorAnterior = str[cont];
-              //console.log("String antes: "+str);
-              //str[cont] = links[i].text[0][1];
-              //console.log("String depois: "+str);
+        
               trocaCaracter(links[i].text[0][1], cont);
             }
             if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[0][2])) {
-              //console.log("\nAchou filho com caractere correspondente");
+
               caminho.push(to);
               return true;
             }
@@ -546,7 +552,6 @@
               cont--;
               if (cont >= 0 || cont < str.length) {
                 trocaCaracter(valorAnterior, cont);
-                //str[cont] = valorAnterior;
               }
             }
           }
@@ -563,9 +568,6 @@
       caminho = [];
       contPasso = 0;
       let valorAnterior = 0;
-
-      console.log(listas);
-
 
       if (buscaFinal(finais, to)) { // Se chegou em um final, Sucesso!
         caminho.push(to);
@@ -591,7 +593,6 @@
 
           if (kaux == 0) {
            
-            //listas[0][cont] = links[i].text[1];
 
             for (iaux = 0; iaux < numerolistas; iaux ++){
               valoresanteriores[iaux] = listas[iaux][contlist[iaux]];
