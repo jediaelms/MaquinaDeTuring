@@ -38,6 +38,8 @@
     var inicial = 0;
     var finais = [];
     var caminho = [];
+    var caractesTrocados = [];
+    var strModificada = "";
     var contPasso = 0;
     var str = "";
     var tipoMT = 1; // Tipo da maquina de turing: 0, comum, 1, Estendida
@@ -54,7 +56,7 @@
       var b = 0
       var a = 0
       for (; a < numerolistas; a++) {
-        contlist[a] = (numeroAuxiliar/2) - 1;
+        contlist[a] = (numeroAuxiliar / 2) - 1;
         listas[a] = [numeroAuxiliar];
         for (b = 0; b < numeroAuxiliar; b++) {
           listas[a][b] = "@"
@@ -153,14 +155,14 @@
     function init() {
 
       tipoMT = parseInt(prompt("Selecione o tipo de Máquina de Turing: 0 - Normal ; 1 - Estendida"));
-      if(tipoMT == 1){
+      if (tipoMT == 1) {
         numerolistas = parseInt(prompt("Digite o número de fitas da Máquina de Turing  Estendida"));
       }
 
       console.log(tipoMT);
       console.log(numerolistas)
 
-        
+
 
       document.getElementById("prox").disabled = true;
       document.getElementById("ant").disabled = true;
@@ -331,6 +333,7 @@
     function simular() {
       if (inicial != 0 && finais.length > 0) {
         str = document.getElementById("string").value;
+        strModificada = str;
         document.getElementById("mySavedModel").value = myDiagram.model.toJson();
         var objs = JSON.parse(myDiagram.model.toJson());
         var links = objs.linkDataArray;
@@ -352,15 +355,16 @@
         console.log(links[0].text[0][0])
 
         console.log(links);
-        if(tipoMT == 0){
+        if (tipoMT == 0) {
           if (simulador2(links, -1, 0, inicial, "D")) {
             document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
+            //exibeFita();
           }
           else {
             document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
           }
         }
-        else{
+        else {
           inicializaListas();
           if (simulador3(links, 0, inicial)) {
             document.getElementById("result").innerHTML = "<span style='color: green'>Aceita</span>";
@@ -368,7 +372,7 @@
           else {
             document.getElementById("result").innerHTML = "<span style='color: red'>Rejeitada</span>";
           }
-        }        
+        }
       }
       else {
         alert("Não é possível simular o autômato finito. Pois não há um nó inicial ou pelo menos um nó final.")
@@ -385,7 +389,7 @@
         $('input[name=strings]').each(function (index, text) {
           str = $(this).val();
           console.log(str + ", index: " + index);
-          if(tipoMT == 0){
+          if (tipoMT == 0) {
             if (simulador2(links, -1, 0, inicial, "D")) {
               console.log("String " + str + " aceita.");
               $(this).parent().parent('tr').css("background-color", "#d0e9c6");
@@ -396,11 +400,11 @@
               $(this).parent().parent('tr').css("background-color", "#f2dede");
               $(this).parent().parent().children(".aceita").empty();
               $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
-           }
+            }
           }
-        else{
-          inicializaListas();
-          if (simulador3(links, 0, inicial)) {
+          else {
+            inicializaListas();
+            if (simulador3(links, 0, inicial)) {
               console.log("String " + str + " aceita.");
               $(this).parent().parent('tr').css("background-color", "#d0e9c6");
               $(this).parent().parent().children(".aceita").empty();
@@ -410,10 +414,10 @@
               $(this).parent().parent('tr').css("background-color", "#f2dede");
               $(this).parent().parent().children(".aceita").empty();
               $(this).parent().parent().children(".aceita").append("<i class='fas fa-times text-danger'></i>");
-           }
-        }
+            }
+          }
 
-          
+
         }
         );
       }
@@ -522,12 +526,23 @@
       aux = aux.concat(novoCaracter);
       aux = aux.concat(str.substr((posicao + 1), str.length));
       str = aux;
-      $('#string').val(aux);
+      //$('#string').val(aux);
+    }
+
+    function exibeFita() {
+      var html = "";
+      html += "<table border=\"1\" id=\"tableFita\"><tr><td class=\"tdFita\" ></td>";
+      for (var i = 0; i < str.length; i++) {
+        html += "<td class=\"tdFita\">" + str[i] + "</td>";
+      }
+      html += "<td class=\"tdFita\"></td></tr></table>";
+      $("#fita").html(html);
     }
 
     function simulador2(links, cont, from, to, ant) {
       var i = 0;
       caminho = [];
+      aux = [];
       contPasso = 0;
       let valorAnterior = 0;
 
@@ -535,18 +550,20 @@
       else if (ant == "E") cont--;
 
       if (buscaFinal(finais, to)) { // Se chegou em um final, Sucesso!
-        caminho.push(to);
+        aux = [to, ant];
+        caminho.push(aux);
         return true;
       }
 
 
       for (i = 0; i < links.length; i++) {
- 
+
         if (cont == -1 || cont == str.length) { //Chegou em um branco
           if (links[i].text[0][0] == "@" && links[i].from == to) {
             if (buscaFinal(finais, links[i].to)) {
               if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[0][0][2])) {
-                caminho.push(to);
+                aux = [to, ant];
+                caminho.push(aux);
                 return true;
               }
             }
@@ -557,12 +574,14 @@
           if (links[i].from == to && ((links[i].text[0][0] == str[cont]))) {
 
             if (cont >= 0 || cont < str.length) {
-        
+
               trocaCaracter(links[i].text[0][1], cont);
+              aux = [links[i].text[0][1], cont];
+              caractesTrocados.push(aux);
             }
             if (simulador2(links, cont, links[i].from, links[i].to, links[i].text[0][2])) {
-
-              caminho.push(to);
+              aux = [to, ant];
+              caminho.push(aux);
               return true;
             }
             else {
@@ -597,52 +616,52 @@
       for (i = 0; i < links.length; i++) {
 
         kaux = 1;
-          
-          if(links[i].from == to){
-            kaux = 0;
-            for (iaux = 0; iaux < numerolistas; iaux ++){
-              if(listas[iaux][contlist[iaux]] != links[i].text[iaux][0]){
-                kaux = 1;
-                break;
-              }
+
+        if (links[i].from == to) {
+          kaux = 0;
+          for (iaux = 0; iaux < numerolistas; iaux++) {
+            if (listas[iaux][contlist[iaux]] != links[i].text[iaux][0]) {
+              kaux = 1;
+              break;
+            }
+          }
+        }
+
+        if (kaux == 0) {
+
+
+          for (iaux = 0; iaux < numerolistas; iaux++) {
+            valoresanteriores[iaux] = listas[iaux][contlist[iaux]];
+            listas[iaux][contlist[iaux]] = links[i].text[iaux][1];
+
+            if (links[i].text[iaux][2] == "D") {
+              contlist[iaux]++;
+            }
+            else if (links[i].text[iaux][2] == "E") {
+              contlist[iaux]--;
             }
           }
 
-          if (kaux == 0) {
-           
+          if (simulador3(links, links[i].from, links[i].to)) {
+            caminho.push(to);
+            return true;
+          }
+          else {
+            for (iaux = 0; iaux < numerolistas; iaux++) {
 
-            for (iaux = 0; iaux < numerolistas; iaux ++){
-              valoresanteriores[iaux] = listas[iaux][contlist[iaux]];
-              listas[iaux][contlist[iaux]] = links[i].text[iaux][1];
-              
-              if(links[i].text[iaux][2] == "D"){
-                contlist[iaux] ++;
+              if (links[i].text[iaux][2] == "D") {
+                contlist[iaux]--;
               }
-              else if (links[i].text[iaux][2] == "E"){
-                contlist[iaux] --;
+              else if (links[i].text[iaux][2] == "E") {
+                contlist[iaux]++;
               }
-            }
 
-            if (simulador3(links, links[i].from, links[i].to)) {
-              caminho.push(to);
-              return true;
-            }
-            else {
-              for (iaux = 0; iaux < numerolistas; iaux ++){     
-              
-                if(links[i].text[iaux][2] == "D"){
-                  contlist[iaux] --;
-                }
-                else if (links[i].text[iaux][2] == "E"){
-                  contlist[iaux] ++;
-                }
+              listas[iaux][contlist[iaux]] = valoresanteriores[iaux];
 
-                listas[iaux][contlist[iaux]] = valoresanteriores[iaux];
-
-              }
             }
           }
-        
+        }
+
       }
       caminho.push(0);
       return false;
@@ -653,17 +672,18 @@
 
     function passoapasso() {
       console.log("Função passoapasso ->\nCaminho.length = " + caminho.length);
-      console.log("Passo: " + contPasso + ", caminho[" + (caminho.length - contPasso - 1) + "] = " + caminho[caminho.length - contPasso - 1]);
+      console.log("Passo: " + contPasso + ", caminho[" + (caminho.length - contPasso - 1) + "] = " + caminho[caminho.length - contPasso - 1][0]);
 
-      if (caminho[caminho.length - contPasso - 1] == 0) {
+      exibeFita();
+      if (caminho[caminho.length - contPasso - 1][0] == 0) {
         document.getElementById("string").element.style.backgroundColor = "#e18383";
       }
       else {
         if (contPasso < caminho.length) {
-          if (caminho[caminho.length - contPasso - 1] == 0) {
+          if (caminho[caminho.length - contPasso - 1][0] == 0) {
             document.getElementById("string").element.style.backgroundColor = "#e18383";
           } else {
-            destacaNo(caminho[caminho.length - contPasso - 1]);
+            destacaNo(caminho[caminho.length - contPasso - 1][0]);
             highlight(contPasso);
           }
           contPasso++;
@@ -694,10 +714,18 @@
     }
 
     function highlight(indice) {
-      if (indice >= 0) {
-        conteudo = str.substring(0, indice) + "<span class='highlight'>" + str.substring(indice, indice + 1) + "</span>" + str.substring(indice + 1);
-        document.getElementById("string").innerText = conteudo;
-      }
+      var aux;
+      $('#tableFita tr td').each(function (index, elemento) {
+        //aux = caractesTrocados.shift();
+        //if (aux[1] == (index - 1)) {
+        //  elemento.innerHTML = aux[0];
+        //}
+        if ((index - 1) == indice) {
+          elemento.classList.add('nextSymbol');
+        } else {
+          elemento.classList.remove('nextSymbol');
+        }
+      });
     }
 
     function pesquisa(vetor, chave) {
@@ -1040,8 +1068,8 @@
               <div>
                 <span>Fita:</span>
                 <div id="fita" type="text" class="input-div input-block-level monospaceRegex"
-                  placeholder="See if this fits">
-                  <font class="nextSymbol">b</font>aa
+                  style="overflow-x:auto; width: 450px;">
+                  <!--<font class="nextSymbol">b</font>aa-->
                 </div>
               </div>
             </td>
